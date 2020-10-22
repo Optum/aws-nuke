@@ -64,10 +64,7 @@ func (f *EMRCluster) Remove() error {
 
 	//Call names are inconsistent in the SDK
 	_, err := f.svc.TerminateJobFlows(params)
-	// Force nil return due to async callbacks blocking
-	/*if err == nil {
-		return nil
-	}*/
+
 	if err != nil {
 		if f.featureFlags.DisableDeletionProtection.EMRCluster {
 			awsErr, ok := err.(awserr.Error)
