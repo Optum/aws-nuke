@@ -40,6 +40,7 @@ type DisableDeletionProtection struct {
 	RDSInstance         bool `yaml:"RDSInstance"`
 	EC2Instance         bool `yaml:"EC2Instance"`
 	CloudformationStack bool `yaml:"CloudformationStack"`
+	EMRCluster          bool `yaml:"EMRCluster"`
 }
 
 type PresetDefinitions struct {
