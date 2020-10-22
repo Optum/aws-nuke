@@ -26,6 +26,8 @@
 - Add Kinesis Analytics Application V2 resource
 - Add WAF global rule predicates resource
 - Add EMR disable termination protection flag
+- Upgrade to go 1.15
+- Upgrade to aws sdk version v1.34.12
 
 ## v1.2.0
 
