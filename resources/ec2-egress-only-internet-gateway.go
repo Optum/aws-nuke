@@ -3,11 +3,12 @@ package resources
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/rebuy-de/aws-nuke/pkg/types"
 )
 
 type EC2EgressOnlyInternetGateway struct {
-	svc *ec2.EC2
+	svc ec2iface.EC2API
 	igw *ec2.EgressOnlyInternetGateway
 }
 

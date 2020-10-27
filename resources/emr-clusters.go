@@ -8,11 +8,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/emr"
+	"github.com/aws/aws-sdk-go/service/emr/emriface"
 	"github.com/rebuy-de/aws-nuke/pkg/config"
 )
 
 type EMRCluster struct {
-	svc   *emr.EMR
+	svc   emriface.EMRAPI
 	ID    *string
 	state *string
 
