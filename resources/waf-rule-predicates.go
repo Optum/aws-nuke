@@ -4,11 +4,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
+	"github.com/aws/aws-sdk-go/service/waf/wafiface"
 	"github.com/rebuy-de/aws-nuke/pkg/types"
 )
 
 type WAFRulePredicate struct {
-	svc       *waf.WAF
+	svc       wafiface.WAFAPI
 	ruleID    *string
 	predicate *waf.Predicate
 }

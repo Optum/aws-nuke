@@ -4,10 +4,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesisanalyticsv2"
+	"github.com/aws/aws-sdk-go/service/kinesisanalyticsv2/kinesisanalyticsv2iface"
 )
 
 type KinesisAnalyticsApplicationV2 struct {
-	svc             *kinesisanalyticsv2.KinesisAnalyticsV2
+	svc             kinesisanalyticsv2iface.KinesisAnalyticsV2API
 	applicationName *string
 }
 
