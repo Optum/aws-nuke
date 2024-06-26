@@ -6,12 +6,15 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
 type KMSAlias struct {
 	svc  *kms.KMS
 	name string
+
+	featureFlags config.FeatureFlags
 }
 
 func init() {
@@ -48,11 +51,19 @@ func (e *KMSAlias) Remove() error {
 	_, err := e.svc.DeleteAlias(&kms.DeleteAliasInput{
 		AliasName: &e.name,
 	})
+	if e.featureFlags.DisableFailOnKMSError && err != nil {
+		fmt.Printf("Ignoring KMSAlias Remove error: %s\n", err.Error())
+		return fmt.Errorf("ignoring error")
+	}
 	return err
 }
 
 func (e *KMSAlias) String() string {
 	return e.name
+}
+
+func (e *KMSAlias) FeatureFlags(ff config.FeatureFlags) {
+	e.featureFlags = ff
 }
 
 func (e *KMSAlias) Properties() types.Properties {

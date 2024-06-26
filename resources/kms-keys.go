@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
@@ -15,6 +16,8 @@ type KMSKey struct {
 	state   string
 	manager *string
 	tags    []*kms.Tag
+
+	featureFlags config.FeatureFlags
 }
 
 func init() {
@@ -102,11 +105,19 @@ func (e *KMSKey) Remove() error {
 		KeyId:               &e.id,
 		PendingWindowInDays: aws.Int64(7),
 	})
+	if e.featureFlags.DisableFailOnKMSError && err != nil {
+		fmt.Printf("Ignoring KMSKey Remove error: %s\n", err.Error())
+		return fmt.Errorf("ignoring error")
+	}
 	return err
 }
 
 func (e *KMSKey) String() string {
 	return e.id
+}
+
+func (e *KMSKey) FeatureFlags(ff config.FeatureFlags) {
+	e.featureFlags = ff
 }
 
 func (i *KMSKey) Properties() types.Properties {
