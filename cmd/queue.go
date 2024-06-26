@@ -16,6 +16,7 @@ const (
 	ItemStateFailed
 	ItemStateFiltered
 	ItemStateFinished
+	ItemStateIgnored
 )
 
 // An Item describes an actual AWS resource entity with the current state and
@@ -44,6 +45,8 @@ func (i *Item) Print() {
 		Log(i.Region, i.Type, i.Resource, ReasonSkip, i.Reason)
 	case ItemStateFinished:
 		Log(i.Region, i.Type, i.Resource, ReasonSuccess, "removed")
+	case ItemStateIgnored:
+		Log(i.Region, i.Type, i.Resource, ReasonSuccess, "ignored")
 	}
 }
 

@@ -128,8 +128,8 @@ func (n *Nuke) Run() error {
 		time.Sleep(5 * time.Second)
 	}
 
-	fmt.Printf("Nuke complete: %d failed, %d skipped, %d finished.\n\n",
-		n.items.Count(ItemStateFailed), n.items.Count(ItemStateFiltered), n.items.Count(ItemStateFinished))
+	fmt.Printf("Nuke complete: %d failed, %d skipped, %d ignored, %d finished.\n\n",
+		n.items.Count(ItemStateFailed), n.items.Count(ItemStateFiltered), n.items.Count(ItemStateIgnored), n.items.Count(ItemStateFinished))
 
 	return nil
 }
@@ -264,15 +264,15 @@ func (n *Nuke) HandleQueue() {
 	}
 
 	fmt.Println()
-	fmt.Printf("Removal requested: %d waiting, %d failed, %d skipped, %d finished\n\n",
+	fmt.Printf("Removal requested: %d waiting, %d failed, %d skipped, %d ignored, %d finished\n\n",
 		n.items.Count(ItemStateWaiting, ItemStatePending), n.items.Count(ItemStateFailed),
-		n.items.Count(ItemStateFiltered), n.items.Count(ItemStateFinished))
+		n.items.Count(ItemStateFiltered), n.items.Count(ItemStateIgnored), n.items.Count(ItemStateFinished))
 }
 
 func (n *Nuke) HandleRemove(item *Item) {
 	err := item.Resource.Remove()
 	if err != nil && err.Error() == "ignoring error" {
-		item.State = ItemStateFinished
+		item.State = ItemStateIgnored
 		item.Reason = ""
 		return
 	} else if err != nil {
