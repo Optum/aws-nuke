@@ -36,7 +36,6 @@ func init() {
 	registerCloudControl("AWS::Timestream::ScheduledQuery")
 	registerCloudControl("AWS::Timestream::Table")
 	registerCloudControl("AWS::Transfer::Workflow")
-	registerCloudControl("AWS::NetworkFirewall::Firewall")
 	registerCloudControl("AWS::NetworkFirewall::FirewallPolicy")
 	registerCloudControl("AWS::NetworkFirewall::RuleGroup")
 }

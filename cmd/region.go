@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/awsutil"
 )
@@ -19,14 +21,17 @@ type Region struct {
 	NewSession      SessionFactory
 	ResTypeResolver ResourceTypeResolver
 
+	Config *aws.Config
+
 	cache map[string]*session.Session
 	lock  *sync.RWMutex
 }
 
-func NewRegion(name string, typeResolver ResourceTypeResolver, sessionFactory SessionFactory) *Region {
+func NewRegion(name string, config *aws.Config, typeResolver ResourceTypeResolver, sessionFactory SessionFactory) *Region {
 	return &Region{
 		Name:            name,
 		NewSession:      sessionFactory,
+		Config:          config,
 		ResTypeResolver: typeResolver,
 		lock:            &sync.RWMutex{},
 		cache:           make(map[string]*session.Session),
@@ -59,4 +64,14 @@ func (region *Region) Session(resourceType string) (*session.Session, error) {
 	region.cache[svcType] = sess
 	region.lock.Unlock()
 	return sess, nil
+}
+
+func (region *Region) NewConfig(resourceType string) (*aws.Config, error) {
+	if region.Name == "global" {
+		return nil, awsutil.ErrSkipRequest(fmt.Sprintf(
+			"No service available in region '%s' to handle '%s'",
+			region.Name, resourceType))
+	}
+
+	return region.Config, nil
 }

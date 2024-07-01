@@ -56,7 +56,7 @@ func (s *scanner) list(region *Region, resourceType string) {
 	lister := resources.GetLister(resourceType)
 	var rs []resources.Resource
 	sess, err := region.Session(resourceType)
-	if err == nil {
+	if err == nil && lister != nil {
 		rs, err = lister(sess)
 	}
 	if err != nil {
@@ -76,6 +76,32 @@ func (s *scanner) list(region *Region, resourceType string) {
 		log.Errorf("Listing %s failed:\n%s", resourceType, dump)
 		return
 	}
+
+	listerV2 := resources.GetListerV2(resourceType)
+	var rsV2 []resources.Resource
+	cfg, err := region.NewConfig(resourceType)
+	if err == nil && listerV2 != nil {
+		rsV2, err = listerV2(cfg)
+	}
+	if err != nil {
+		_, ok := err.(awsutil.ErrSkipRequest)
+		if ok {
+			log.Debugf("skipping request: %v", err)
+			return
+		}
+
+		_, ok = err.(awsutil.ErrUnknownEndpoint)
+		if ok {
+			log.Warnf("skipping request: %v", err)
+			return
+		}
+
+		dump := util.Indent(fmt.Sprintf("%v", err), "    ")
+		log.Errorf("Listing %s failed:\n%s", resourceType, dump)
+		return
+	}
+
+	rs = append(rs, rsV2...)
 
 	for _, r := range rs {
 		s.items <- &Item{

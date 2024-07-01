@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	v2aws "github.com/aws/aws-sdk-go-v2/aws"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
@@ -42,6 +44,8 @@ type Credentials struct {
 
 	CustomEndpoints config.CustomEndpoints
 	session         *session.Session
+
+	config *v2aws.Config
 }
 
 func (c *Credentials) HasProfile() bool {

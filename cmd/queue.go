@@ -53,6 +53,12 @@ func (i *Item) Print() {
 // List gets all resource items of the same resource type like the Item.
 func (i *Item) List() ([]resources.Resource, error) {
 	lister := resources.GetLister(i.Type)
+	if lister == nil {
+		// Type has supported V2 implementation
+		lister := resources.GetListerV2(i.Type)
+		return lister(i.Region.Config)
+	}
+
 	sess, err := i.Region.Session(i.Type)
 	if err != nil {
 		return nil, err
