@@ -5,9 +5,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
-	"github.com/golang/mock/gomock"
 	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_cloudformationiface"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestCloudformationStackSet_Remove(t *testing.T) {
@@ -53,7 +53,7 @@ func TestCloudformationStackSet_Remove(t *testing.T) {
 		cloudformation.StackSetOperationResultStatusRunning,
 		cloudformation.StackSetOperationResultStatusSucceeded,
 	}
-	describeStackSetOperationCalls := make([]*gomock.Call, len(describeStackSetStatuses))
+	describeStackSetOperationCalls := make([]any, len(describeStackSetStatuses))
 	for i, status := range describeStackSetStatuses {
 		describeStackSetOperationCalls[i] = mockCloudformation.EXPECT().DescribeStackSetOperation(gomock.Eq(&cloudformation.DescribeStackSetOperationInput{
 			OperationId:  aws.String("o1"),

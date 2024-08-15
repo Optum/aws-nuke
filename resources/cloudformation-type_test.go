@@ -5,9 +5,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
-	"github.com/golang/mock/gomock"
 	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_cloudformationiface"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestCloudformationType_Remove(t *testing.T) {

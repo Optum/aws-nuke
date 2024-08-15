@@ -54,7 +54,9 @@ type ResourceSettings struct {
 
 type CloudFormationStackSettings struct {
 	ResourceSettings `yaml:",inline"`
-	ServiceRoleArn   string `yaml:"ServiceRoleArn"`
+
+	// Allow Service to create and delete IAM roles in order to delete CloudFormation stacks
+	EnableAutomaticRoleManagment bool `yaml:"EnableAutomaticRoleManagment"`
 }
 
 type DisableDeletionProtection struct {

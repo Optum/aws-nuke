@@ -76,6 +76,9 @@ func (e *IAMRole) Filter() error {
 	if strings.HasPrefix(e.path, "/aws-reserved/sso.amazonaws.com/") {
 		return fmt.Errorf("cannot delete SSO roles")
 	}
+	if strings.HasPrefix(e.path, "nuke-service-role-CFS") { // Required for CloudFormation
+		return fmt.Errorf("cannot delete cloudformation service role")
+	}
 	return nil
 }
 
