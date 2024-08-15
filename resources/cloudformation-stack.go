@@ -249,6 +249,9 @@ func (cfs *CloudFormationStack) String() string {
 
 func (cfs *CloudFormationStack) createServiceRoleArn() error {
 	serviceRoleName := SERVICE_ROLE_NAME + "-" + *cfs.stack.StackName
+	if len(serviceRoleName) > 64 {
+		serviceRoleName = serviceRoleName[:64]
+	}
 
 	role, _ := cfs.iamSvc.GetRole(cfs.context, &iam.GetRoleInput{
 		RoleName: &serviceRoleName,
