@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -123,7 +122,7 @@ func (b *BackupVaultAccessPolicy) String() string {
 
 func (b *BackupVaultAccessPolicy) Filter() error {
 	if strings.HasPrefix(b.backupVaultName, "aws/efs/automatic-backup-vault") {
-		return fmt.Errorf("cannot delete EFS automatic backups backup policy")
+		return nil
 	}
 	return nil
 }
