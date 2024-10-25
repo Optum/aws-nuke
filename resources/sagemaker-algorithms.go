@@ -1,32 +1,35 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sagemaker"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/sagemaker"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
 type SageMakerAlgorithm struct {
-	svc           *sagemaker.SageMaker
+	svc           *sagemaker.Client
 	algorithmName *string
+	context       context.Context
 }
 
 func init() {
-	register("SageMakerAlgorithm", ListSageMakerAlgorithms)
+	registerV2("SageMakerAlgorithm", ListSageMakerAlgorithms)
 }
 
-func ListSageMakerAlgorithms(sess *session.Session) ([]Resource, error) {
+func ListSageMakerAlgorithms(cfg *aws.Config) ([]Resource, error) {
 
-	svc := sagemaker.New(sess)
+	ctx := context.TODO()
+	svc := sagemaker.NewFromConfig(*cfg)
 	resources := []Resource{}
 
 	params := &sagemaker.ListAlgorithmsInput{
-		MaxResults: aws.Int64(30),
+		MaxResults: aws.Int32(30),
 	}
 
 	for {
-		resp, err := svc.ListAlgorithms(params)
+		resp, err := svc.ListAlgorithms(ctx, params)
 		if err != nil {
 			return nil, err
 		}
@@ -35,6 +38,7 @@ func ListSageMakerAlgorithms(sess *session.Session) ([]Resource, error) {
 			resources = append(resources, &SageMakerAlgorithm{
 				svc:           svc,
 				algorithmName: algorithm.AlgorithmName,
+				context:       ctx,
 			})
 		}
 
@@ -50,7 +54,7 @@ func ListSageMakerAlgorithms(sess *session.Session) ([]Resource, error) {
 
 func (f *SageMakerAlgorithm) Remove() error {
 
-	_, err := f.svc.DeleteAlgorithm(&sagemaker.DeleteAlgorithmInput{
+	_, err := f.svc.DeleteAlgorithm(f.context, &sagemaker.DeleteAlgorithmInput{
 		AlgorithmName: f.algorithmName,
 	})
 

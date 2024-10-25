@@ -1,40 +1,35 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sagemaker"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/sagemaker"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
 type SageMakerSpace struct {
-	svc       *sagemaker.SageMaker
+	svc       *sagemaker.Client
 	spaceName *string
 	domainID  *string
-}
-
-type SageMakerAppDelete struct {
-	svc       *sagemaker.SageMaker
-	appName   *string
-	domainID  *string
-	appType   *string
-	spaceName *string
+	context   context.Context
 }
 
 func init() {
-	register("SageMakerSpaces", ListSageMakerSpaces)
+	registerV2("SageMakerSpaces", ListSageMakerSpaces)
 }
 
-func ListSageMakerSpaces(sess *session.Session) ([]Resource, error) {
-	svc := sagemaker.New(sess)
+func ListSageMakerSpaces(cfg *aws.Config) ([]Resource, error) {
+	ctx := context.TODO()
+	svc := sagemaker.NewFromConfig(*cfg)
 	resources := []Resource{}
 
 	params := &sagemaker.ListSpacesInput{
-		MaxResults: aws.Int64(30),
+		MaxResults: aws.Int32(30),
 	}
 
 	for {
-		resp, err := svc.ListSpaces(params)
+		resp, err := svc.ListSpaces(ctx, params)
 		if err != nil {
 			return nil, err
 		}
@@ -44,8 +39,9 @@ func ListSageMakerSpaces(sess *session.Session) ([]Resource, error) {
 				svc:       svc,
 				spaceName: space.SpaceName,
 				domainID:  space.DomainId,
+				context:   ctx,
 			})
-			deleteAppsInSpace(sess, *space.DomainId, *space.SpaceName, svc)
+			deleteAppsInSpace(ctx, cfg, *space.DomainId, *space.SpaceName, svc)
 		}
 
 		if resp.NextToken == nil {
@@ -60,7 +56,7 @@ func ListSageMakerSpaces(sess *session.Session) ([]Resource, error) {
 
 func (f *SageMakerSpace) Remove() error {
 
-	_, err := f.svc.DeleteSpace(&sagemaker.DeleteSpaceInput{
+	_, err := f.svc.DeleteSpace(f.context, &sagemaker.DeleteSpaceInput{
 		SpaceName: f.spaceName,
 		DomainId:  f.domainID,
 	})
@@ -72,21 +68,22 @@ func (f *SageMakerSpace) String() string {
 	return *f.spaceName
 }
 
-func deleteAppsInSpace(sess *session.Session, DomainId string, SpaceName string, svc *sagemaker.SageMaker) error {
+func deleteAppsInSpace(ctx context.Context, cfg *aws.Config, DomainId string, SpaceName string, svc *sagemaker.Client) error {
+
 	input := &sagemaker.ListAppsInput{
 		DomainIdEquals:  &DomainId,
 		SpaceNameEquals: &SpaceName,
-		MaxResults:      aws.Int64(30),
+		MaxResults:      aws.Int32(30),
 	}
-	svc = sagemaker.New(sess)
+	svc = sagemaker.NewFromConfig(*cfg)
 	for {
-		resp, err := svc.ListApps(input)
+		resp, err := svc.ListApps(ctx, input)
 		if err != nil {
 			return err
 		}
 
 		for _, app := range resp.Apps {
-			_, err := svc.DeleteApp(&sagemaker.DeleteAppInput{
+			_, err := svc.DeleteApp(ctx, &sagemaker.DeleteAppInput{
 				DomainId:  app.DomainId,
 				AppName:   app.AppName,
 				AppType:   app.AppType,
