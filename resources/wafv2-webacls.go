@@ -77,6 +77,11 @@ func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, e
 	return resources, nil
 }
 
+func (f *WAFv2WebACL) DisassociateWebACL(input *wafv2.DisassociateWebACLInput) (*wafv2.DisassociateWebACLOutput, error) {
+	req, out := f.svc.DisassociateWebACLRequest(input)
+	return out, req.Send()
+}
+
 func (f *WAFv2WebACL) Remove() error {
 	_, err := f.svc.DeleteWebACL(&wafv2.DeleteWebACLInput{
 		Id:        f.ID,
