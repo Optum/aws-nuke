@@ -77,6 +77,7 @@ func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, e
 	return resources, nil
 }
 
+// Disassociate WebACL which causing the failure to nuke WAFV2 objects
 func (f *WAFv2WebACL) DisassociateWebACL(input *wafv2.DisassociateWebACLInput) (*wafv2.DisassociateWebACLOutput, error) {
 	req, out := f.svc.DisassociateWebACLRequest(input)
 	return out, req.Send()
