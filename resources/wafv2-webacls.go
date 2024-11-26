@@ -1,18 +1,23 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/wafv2"
+	"github.com/go-logr/logr"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
+// const defaultWebACLARNByResourceARNCacheTTL = 10 * time.Minute
 type WAFv2WebACL struct {
 	svc       *wafv2.WAFV2
 	ID        *string
 	name      *string
 	lockToken *string
 	scope     *string
+	logger    logr.Logger
 }
 
 func init() {
@@ -78,9 +83,18 @@ func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, e
 }
 
 // Disassociate WebACL which causing the failure to nuke WAFV2 objects
-func (f *WAFv2WebACL) DisassociateWebACL(input *wafv2.DisassociateWebACLInput) (*wafv2.DisassociateWebACLOutput, error) {
-	req, out := f.svc.DisassociateWebACLRequest(input)
-	return out, req.Send()
+
+func (f *WAFv2WebACL) DisassociateWebACL(ctx context.Context, resourceARN string) error {
+	req := &wafv2.DisassociateWebACLInput{
+		ResourceArn: aws.String(resourceARN),
+	}
+	f.logger.Info("disassociating WAFv2 webACL",
+		"resourceARN", resourceARN)
+	if _, err := f.svc.DisassociateWebACLWithContext(ctx, req); err != nil {
+		return err
+	}
+	f.logger.Info("disassociated WAFv2 webACL", "resourceARN", resourceARN)
+	return nil
 }
 
 func (f *WAFv2WebACL) Remove() error {
