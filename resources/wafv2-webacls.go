@@ -10,7 +10,6 @@ import (
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
-// const defaultWebACLARNByResourceARNCacheTTL = 10 * time.Minute
 type WAFv2WebACL struct {
 	svc       *wafv2.WAFV2
 	ID        *string
