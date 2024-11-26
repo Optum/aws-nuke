@@ -83,7 +83,6 @@ func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, e
 }
 
 // Disassociate WebACL which causing the failure to nuke WAFV2 objects
-
 func (f *WAFv2WebACL) DisassociateWebACL(ctx context.Context, resourceARN string) error {
 	req := &wafv2.DisassociateWebACLInput{
 		ResourceArn: aws.String(resourceARN),

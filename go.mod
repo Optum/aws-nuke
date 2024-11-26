@@ -28,6 +28,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+require github.com/kr/pretty v0.3.1 // indirect
+
 require (
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.8 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.15 // indirect
@@ -37,13 +39,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.14 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.22.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.0 // indirect
-	github.com/cjlapao/common-go v0.0.41
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gemnasium/logrus-graylog-hook/v3 v3.1.0 // indirect
 	github.com/go-logr/logr v1.4.2
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
