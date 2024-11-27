@@ -97,10 +97,11 @@ func (f *WAFv2WebACL) DisassociateWebACL(ctx context.Context, resourceARN string
 
 func (f *WAFv2WebACL) Remove() error {
 
-	err = f.DisassociateWebACL(context.TODO(), "resourceARN")
+	err := f.DisassociateWebACL(ctx, "resourceARN")
 	if err != nil {
 		return err
 	}
+	
 	_, err := f.svc.DeleteWebACL(&wafv2.DeleteWebACLInput{
 		Id:        f.ID,
 		Name:      f.name,
