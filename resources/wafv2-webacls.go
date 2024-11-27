@@ -1,9 +1,12 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/wafv2"
+	"github.com/go-logr/logr"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
@@ -13,6 +16,7 @@ type WAFv2WebACL struct {
 	name      *string
 	lockToken *string
 	scope     *string
+	logger    logr.Logger
 }
 
 func init() {
@@ -77,13 +81,36 @@ func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, e
 	return resources, nil
 }
 
+// Disassociate WebACL which causing the failure to nuke WAFV2 objects
+func (f *WAFv2WebACL) DisassociateWebACL(ctx context.Context, resourceARN string) error {
+	req := &wafv2.DisassociateWebACLInput{
+		ResourceArn: aws.String(resourceARN),
+	}
+	f.logger.Info("disassociating WAFv2 webACL",
+		"resourceARN", resourceARN)
+	if _, err := f.svc.DisassociateWebACLWithContext(ctx, req); err != nil {
+		return err
+	}
+	f.logger.Info("disassociated WAFv2 webACL", "resourceARN", resourceARN)
+	return nil
+}
+
 func (f *WAFv2WebACL) Remove() error {
+
+	err := f.DisassociateWebACL(ctx, "resourceARN")
+	if err != nil {
+		return err
+	}
+	
 	_, err := f.svc.DeleteWebACL(&wafv2.DeleteWebACLInput{
 		Id:        f.ID,
 		Name:      f.name,
 		Scope:     f.scope,
 		LockToken: f.lockToken,
 	})
+	if err != nil {
+		return err
+	}
 
 	return err
 }
