@@ -3,9 +3,8 @@ package resources
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	cloudfront "github.com/aws/aws-sdk-go/service/cloudfront"
+	"github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/aws/aws-sdk-go/service/wafv2"
-	"github.com/go-logr/logr"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
@@ -15,8 +14,6 @@ type WAFv2WebACL struct {
 	name      *string
 	lockToken *string
 	scope     *string
-	logger    logr.Logger
-	//resourceARN *string
 }
 
 func init() {
@@ -69,7 +66,6 @@ func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, e
 				name:      webACL.Name,
 				lockToken: webACL.LockToken,
 				scope:     params.Scope,
-				//resourceARN: webACL.ARN,
 			})
 		}
 
@@ -83,15 +79,17 @@ func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, e
 }
 
 // List cloudfront distributions associated with the cloudfront   WebACL
-func (f *cloudfront) ListAssociatedCloudfrontDistributions() ([]*string, error) {
-	//svc := cloudfront.New(f.svc.Config)
-	params := &cloudfront.ListDistributionsInput{}
+func (f *WAFv2WebACL) ListAssociatedCloudfrontDistributions() ([]*string, error) {
+	sess := session.Must(session.NewSession())
+	cf := cloudfront.New(sess)
+	params := &cloudfront.ListDistributionsByWebACLIdInput{
+		WebACLId: f.ID,
+	}
 
 	var distributions []*string
 	for {
 
-		resp, err := f.svc.ListDistributions(params)
-
+		resp, err := cf.ListDistributionsByWebACLId(params)
 		if err != nil {
 			return nil, err
 		}
@@ -110,24 +108,36 @@ func (f *cloudfront) ListAssociatedCloudfrontDistributions() ([]*string, error) 
 	}
 	return distributions, nil
 }
+
 func (f *WAFv2WebACL) RemoveAssociatedCloudfrontDistributions() error {
+
 	distributions, err := f.ListAssociatedCloudfrontDistributions()
 	if err != nil {
 		return err
 	}
 
-	svc := cloudfront.New(f.svc.Config)
+	cf := cloudfront.New(session.Must(session.NewSession()))
 	for _, distribution := range distributions {
-		_, err := svc.UpdateDistribution(&cloudfront.UpdateDistributionInput{
+		_, err := cf.UpdateDistribution(&cloudfront.UpdateDistributionInput{
 			Id: distribution,
 			DistributionConfig: &cloudfront.DistributionConfig{
-				WebACLId: nil,
+				WebACLId: f.ID,
 			},
 			IfMatch: nil,
 		})
 		if err != nil {
 			return err
 		}
+	}
+
+	for _, distribution := range distributions {
+		_, err := f.svc.DisassociateWebACL(&wafv2.DisassociateWebACLInput{
+			ResourceArn: distribution,
+		})
+		if err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
@@ -155,17 +165,21 @@ func UpdateDistribution(svc *cloudfront.CloudFront, distributionID *string, webA
 }
 
 func (f *WAFv2WebACL) Remove() error {
+	err := f.RemoveAssociatedResources()
+	if err != nil {
+		return err
+	}
+	err = UpdateDistribution(cloudfront.New(session.Must(session.NewSession())), f.ID, nil)
 
-	_, err := f.svc.DeleteWebACL(&wafv2.DeleteWebACLInput{
+	_, err = f.svc.DeleteWebACL(&wafv2.DeleteWebACLInput{
 		Id:        f.ID,
-		LockToken: f.lockToken,
 		Name:      f.name,
 		Scope:     f.scope,
+		LockToken: f.lockToken,
 	})
 	if err != nil {
 		return err
 	}
-
 	return err
 }
 
